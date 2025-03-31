@@ -38,7 +38,8 @@ jobs:
         run: |
           cd ap2-apis-user-service
           mkdir -p ../generated
-          protoc --proto_path=. --proto_path=./proto --go_out=../generated --go-grpc_out=../generated $(find ./proto -name "*.proto")
+          # Find all .proto files and generate code
+          find . -name "*.proto" -exec protoc --proto_path=. --go_out=../generated --go-grpc_out=../generated {} +
 
       - name: Copy Generated Files
         run: |
