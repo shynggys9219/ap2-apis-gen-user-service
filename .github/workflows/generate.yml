@@ -38,14 +38,19 @@ jobs:
         run: |
           cd ap2-apis-user-service
           mkdir -p ../generated
-          protoc --proto_path=. --go_out=../generated --go-grpc_out=../generated $(find . -name "*.proto")
+          protoc --proto_path=. --proto_path=./proto --go_out=../generated --go-grpc_out=../generated $(find ./proto -name "*.proto")
 
       - name: Copy Generated Files
         run: |
-          cp -r ../generated/* ./
+          mkdir -p generated
+          cp -r ../generated/* ./generated
 
       - name: Commit & Push Generated Files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "Generated files from Protobufs"
           git push origin main
@@ -73,6 +78,8 @@ jobs:
           echo "New version: $new_version"
 
       - name: Create new tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git tag ${{ steps.next_version.outputs.new_version }}
           git push origin ${{ steps.next_version.outputs.new_version }}
