@@ -1,4 +1,4 @@
-name: Generate ProtoBuf Files
+name: Generate ProtoBuf Files & Auto Tag
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.22
+          go-version: 1.20
 
       - name: Install Protobuf Compiler
         run: |
@@ -32,19 +32,58 @@ jobs:
       - name: Clone Proto Files Repository
         run: |
           git clone https://github.com/shynggys9219/ap2-apis-user-service.git
-          cd proto-files
+          cd ap2-apis-user-service
 
       - name: Generate Go Code from Proto Files
         run: |
-          mkdir -p generated
-          protoc --go_out=./generated --go-grpc_out=./generated $(find . -name "*.proto")
+          cd ap2-apis-user-service
+          mkdir -p ../generated
+          protoc --proto_path=. --go_out=../generated --go-grpc_out=../generated $(find . -name "*.proto")
 
-      - name: Push Generated Files
+      - name: Copy Generated Files
         run: |
-          cd generated
-          git init
-          git checkout -b generated-files
+          cp -r ../generated/* ./
+
+      - name: Commit & Push Generated Files
+        run: |
           git add .
           git commit -m "Generated files from Protobufs"
-          git remote add origin https://github.com/shynggys9219/ap2-apis-gen-user-service.git
-          git push -u origin generated-files --force
+          git push origin main
+
+      - name: Get latest tag
+        id: get_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 || echo 'v0.0.0')"
+
+      - name: Determine next version
+        id: next_version
+        run: |
+          current_version=${{ steps.get_tag.outputs.tag }}
+          echo "Current version: $current_version"
+          
+          major=$(echo $current_version | cut -d '.' -f 1 | cut -d 'v' -f 2)
+          minor=$(echo $current_version | cut -d '.' -f 2)
+          patch=$(echo $current_version | cut -d '.' -f 3)
+          
+          new_major=$major
+          new_minor=$minor
+          new_patch=$((patch + 1))
+          
+          new_version="v$new_major.$new_minor.$new_patch"
+          echo "::set-output name=new_version::$new_version"
+          echo "New version: $new_version"
+
+      - name: Create new tag
+        run: |
+          git tag ${{ steps.next_version.outputs.new_version }}
+          git push origin ${{ steps.next_version.outputs.new_version }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.next_version.outputs.new_version }}
+          release_name: Release ${{ steps.next_version.outputs.new_version }}
+          body: "Automatically generated release."
+          draft: false
+          prerelease: false
