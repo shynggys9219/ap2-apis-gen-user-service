@@ -50,12 +50,13 @@ jobs:
 
       - name: Commit & Push Generated Files
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd ap2-apis-user-service
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
           git add .
           git commit -m "Generated files from Protobufs" || echo "No changes to commit"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/shynggys9219/ap2-apis-user-service.git
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-user-service.git
           git push origin master
+      
