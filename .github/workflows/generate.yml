@@ -54,7 +54,9 @@ jobs:
           git config --global user.email "alshynggys@mail.ru"
           git add .
           git commit -m "Generated files from Protobufs" || echo "No changes to commit"
-          git push
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/shynggys9219/ap2-apis-user-service.git
+          git push origin master
+      
       
 
       - name: Get latest tag
