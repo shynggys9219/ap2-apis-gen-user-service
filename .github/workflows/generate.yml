@@ -38,17 +38,18 @@ jobs:
         run: |
           cd ap2-apis-user-service
           mkdir -p generated
-          # Generate files in 'generated/' directory inside the repo
           find . -name "*.proto" -exec protoc --proto_path=. --go_out=./generated --go-grpc_out=./generated {} +
 
       - name: Verify Generated Files
         run: |
+          cd ap2-apis-user-service
           ls -R generated  # List files to confirm generation
 
       - name: Commit & Push Generated Files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cd ap2-apis-user-service
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
           git add .
@@ -57,4 +58,16 @@ jobs:
 
       - name: Get latest tag
         id: get_tag
-        run: echo "::set-output name=tag::$(
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "::set-output name=tag::$latest_tag"
+
+      - name: Create new tag
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd ap2-apis-user-service
+          git tag -a v$(date +'%Y%m%d%H%M%S') -m "Generated files"
+          git push origin --tags
