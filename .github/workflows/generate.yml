@@ -6,6 +6,9 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -56,21 +59,3 @@ jobs:
           git commit -m "Generated files from Protobufs" || echo "No changes to commit"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/shynggys9219/ap2-apis-user-service.git
           git push origin master
-      
-      
-
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "::set-output name=tag::$latest_tag"
-
-      - name: Create new tag
-        if: success()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd ap2-apis-user-service
-          git tag -a v$(date +'%Y%m%d%H%M%S') -m "Generated files"
-          git push origin --tags
