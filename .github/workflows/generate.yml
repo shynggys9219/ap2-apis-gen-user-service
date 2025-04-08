@@ -49,11 +49,11 @@ jobs:
 
           # Generate base files (messages) directly into base/bo/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
-            --go_out=paths=source_relative:base/bo/v1 {} +
+            --go_out=base/bo/v1 {} +
 
           # Generate service files (services) directly into service/frontend/client/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
-            --go-grpc_out=paths=source_relative:service/frontend/client/v1 {} +
+            --go-grpc_out=service/frontend/client/v1 {} +
 
           # Check for changes in the original proto repository (ap2-apis-user-service)
           git add .
@@ -77,8 +77,9 @@ jobs:
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Copy generated files into the cloned repo
-          cp -r base service ap2-apis-gen-user-service/
+          # Copy generated files into the cloned repo (force overwrite)
+          rsync -av --delete base/ ap2-apis-gen-user-service/base/
+          rsync -av --delete service/ ap2-apis-gen-user-service/service/
 
           cd ap2-apis-gen-user-service
 
@@ -87,8 +88,10 @@ jobs:
 
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
+
           git add .
 
+          # Ensure you are running the diff check in the correct repository
           if git diff --cached --quiet; then
             echo "No changes to commit in generated files."
             exit 0
