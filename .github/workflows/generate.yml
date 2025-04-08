@@ -48,16 +48,20 @@ jobs:
           mkdir -p base/bo/v1 service/frontend/client/v1
 
           # Generate base files (messages) directly into base/bo/v1
+          echo "Generating base files..."
           find . -name "*.proto" -exec protoc -I. \
-            --go_out=paths=source_relative:base/bo/v1 {} \;
+            --go_out=base/bo/v1 \
+            --go-grpc_out=service/frontend/client/v1 {} \; || exit 1
 
-          # Generate service files (services) directly into service/frontend/client/v1
-          find . -name "*.proto" -exec protoc -I. \
-            --go-grpc_out=paths=source_relative:service/frontend/client/v1 {} \;
-
-          # List generated files to confirm generation
+          # Verify if files are generated
           echo "Generated Go files:"
-          find base service -type f
+          find base service -type f || echo "No files generated"
+
+          # Ensure files are generated
+          if [ -z "$(find base service -type f)" ]; then
+            echo "Error: No .pb.go files generated."
+            exit 1
+          fi
 
       - name: Verify Generated Files
         run: |
