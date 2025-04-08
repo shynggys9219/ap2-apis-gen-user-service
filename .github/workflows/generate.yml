@@ -68,29 +68,34 @@ jobs:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd ap2-apis-user-service
-          
+
           # Check if base and service directories exist before copying
           if [ ! -d "base" ] || [ ! -d "service" ]; then
             echo "Base or Service directory not found, generation failed."
             exit 1
           fi
-          
+
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
-          
+
           # Copy generated files into the cloned repo
           cp -r base service ap2-apis-gen-user-service/
-          
+
           cd ap2-apis-gen-user-service
+
+          # Remove all .proto files before committing
+          find . -name "*.proto" -delete
+
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
           git add .
-          
+
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          
+
           git commit -m "Generated files from Protobufs"
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
           git push origin master
+      
