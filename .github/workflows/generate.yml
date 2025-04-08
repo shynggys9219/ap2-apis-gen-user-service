@@ -39,7 +39,7 @@ jobs:
       - name: Generate Go Code from Proto Files
         run: |
           cd ap2-apis-user-service
-          
+
           # Remove old generated files to avoid mixing
           rm -rf base service
           
@@ -64,7 +64,7 @@ jobs:
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Copy generated files into the cloned repo
+          # Copy generated files into the cloned repo (force overwrite)
           rsync -av --delete ap2-apis-user-service/base/ ap2-apis-gen-user-service/base/
           rsync -av --delete ap2-apis-user-service/service/ ap2-apis-gen-user-service/service/
 
@@ -73,13 +73,8 @@ jobs:
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
 
-          git add .
+          git add . --all
 
-          if git diff --cached --quiet; then
-            echo "No changes to commit in generated files."
-            exit 0
-          fi
-
-          git commit -m "Generated files from Protobufs"
+          git commit -m "Generated files from Protobufs" --allow-empty
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
           git push origin master
