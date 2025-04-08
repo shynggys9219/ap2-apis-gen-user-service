@@ -41,31 +41,36 @@ jobs:
         run: |
           cd ap2-apis-user-service
 
-          # Remove old generated files to avoid mixing
-          rm -rf base/bo/v1 service/frontend/client/v1
+          # Confirm directory structure
+          echo "Directory structure before generation:"
+          find . -type d
 
-          # Create directories for generated files
-          mkdir -p base/bo/v1 service/frontend/client/v1
+          # Remove old generated files to avoid mixing
+          rm -rf base/frontend/v1/*.pb.go service/frontend/client/v1/*.pb.go
+
+          # Verify .proto files are where we expect them to be
+          echo "Listing all .proto files:"
+          find . -name "*.proto"
 
           # Generate base files (messages)
           echo "Generating base files..."
           protoc -I. \
-            --go_out=paths=source_relative:base/bo/v1 \
+            --go_out=paths=source_relative:. \
             base/frontend/v1/client.proto
 
           # Generate service files (services)
           echo "Generating service files..."
           protoc -I. \
-            --go_out=paths=source_relative \
-            --go-grpc_out=paths=source_relative \
+            --go_out=paths=source_relative:. \
+            --go-grpc_out=paths=source_relative:. \
             service/frontend/client/v1/client.proto
 
           # Verify generated files
           echo "Generated Go files:"
-          find base service -type f || echo "No files generated"
+          find base service -name "*.pb.go" || echo "No files generated"
 
           # Ensure files are generated
-          if [ -z "$(find base service -type f)" ]; then
+          if [ -z "$(find base service -name "*.pb.go")" ]; then
             echo "Error: No .pb.go files generated."
             exit 1
           fi
