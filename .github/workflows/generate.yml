@@ -41,6 +41,9 @@ jobs:
         run: |
           cd ap2-apis-user-service
 
+          # Create base and service directories if they do not exist
+          mkdir -p ../base ../service
+
           # Generate base files (messages) directly into the base folder
           find . -name "*.proto" -exec protoc --proto_path=. \
             --go_out=../base {} +
@@ -48,6 +51,7 @@ jobs:
           # Generate service files (services) directly into the service folder
           find . -name "*.proto" -exec protoc --proto_path=. \
             --go-grpc_out=../service {} +
+      
 
       - name: Verify Generated Files
         run: |
