@@ -56,7 +56,7 @@ jobs:
           echo "Listing all .proto files:"
           find . -name "*.proto"
 
-          # Make sure the .proto files actually exist
+          # Make sure the .proto files actually exist (Correct paths)
           if [ ! -f "base/frontend/v1/client.proto" ]; then
             echo "Error: base/frontend/v1/client.proto not found."
             exit 1
