@@ -35,63 +35,46 @@ jobs:
       - name: Clone Proto Files Repository
         run: |
           git clone https://github.com/shynggys9219/ap2-apis-user-service.git
-          cd ap2-apis-user-service
 
       - name: Generate Go Code from Proto Files
         run: |
           cd ap2-apis-user-service
-
+          
           # Remove old generated files to avoid mixing
           rm -rf base service
-
+          
           # Create base and service directories if they do not exist
           mkdir -p base/bo/v1 service/frontend/client/v1
-
+          
           # Generate base files (messages) directly into base/bo/v1
-          find . -name "*.proto" -exec protoc --proto_path=. \
-            --go_out=base/bo/v1 {} +
+          find . -name "*.proto" -exec protoc -I. \
+            --go_out=base/bo/v1 {} \;
 
           # Generate service files (services) directly into service/frontend/client/v1
-          find . -name "*.proto" -exec protoc --proto_path=. \
-            --go-grpc_out=service/frontend/client/v1 {} +
+          find . -name "*.proto" -exec protoc -I. \
+            --go-grpc_out=service/frontend/client/v1 {} \;
 
-          # Check for changes in the original proto repository (ap2-apis-user-service)
-          git add .
-          if git diff --cached --quiet; then
-            echo "No changes to commit in proto files. Skipping generation."
-            exit 0
-          fi
-
-      - name: Verify Generated Files
-        run: |
-          cd ap2-apis-user-service
-          ls -R base || echo "Base directory not found"
-          ls -R service || echo "Service directory not found"
+          echo "Generated Go files:"
+          find base service -type f
 
       - name: Commit & Push Generated Files
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          cd ap2-apis-user-service
-
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Copy generated files into the cloned repo (force overwrite)
-          rsync -av --delete base/ ap2-apis-gen-user-service/base/
-          rsync -av --delete service/ ap2-apis-gen-user-service/service/
+          # Copy generated files into the cloned repo
+          rsync -av --delete ap2-apis-user-service/base/ ap2-apis-gen-user-service/base/
+          rsync -av --delete ap2-apis-user-service/service/ ap2-apis-gen-user-service/service/
 
           cd ap2-apis-gen-user-service
-
-          # Remove all .proto files before committing
-          find . -name "*.proto" -delete
 
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
 
           git add .
 
-          # Ensure you are running the diff check in the correct repository
           if git diff --cached --quiet; then
             echo "No changes to commit in generated files."
             exit 0
