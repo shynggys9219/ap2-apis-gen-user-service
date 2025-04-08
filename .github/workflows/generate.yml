@@ -54,8 +54,13 @@ jobs:
           # Generate service files (services) directly into service/frontend/client/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
             --go-grpc_out=paths=source_relative:service/frontend/client/v1 {} +
-      
-      
+
+          # Check for changes in the original proto repository (ap2-apis-user-service)
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit in proto files. Skipping generation."
+            exit 0
+          fi
 
       - name: Verify Generated Files
         run: |
@@ -68,12 +73,6 @@ jobs:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd ap2-apis-user-service
-
-          # Check if base and service directories exist before copying
-          if [ ! -d "base" ] || [ ! -d "service" ]; then
-            echo "Base or Service directory not found, generation failed."
-            exit 1
-          fi
 
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
@@ -91,11 +90,10 @@ jobs:
           git add .
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No changes to commit in generated files."
             exit 0
           fi
 
           git commit -m "Generated files from Protobufs"
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
           git push origin master
-      
