@@ -41,16 +41,20 @@ jobs:
         run: |
           cd ap2-apis-user-service
 
+          # Remove old generated files to avoid mixing
+          rm -rf base service
+
           # Create base and service directories if they do not exist
           mkdir -p base/bo/v1 service/frontend/client/v1
 
           # Generate base files (messages) directly into base/bo/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
-            --go_out=Mgithub.com/shynggys9219/ap2-apis-gen-user-service/base/bo/v1=base/bo/v1:. {} +
+            --go_out=paths=source_relative:base/bo/v1 {} +
 
           # Generate service files (services) directly into service/frontend/client/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
-            --go-grpc_out=Mgithub.com/shynggys9219/ap2-apis-gen-user-service/service/frontend/client/v1=service/frontend/client/v1:. {} +
+            --go-grpc_out=paths=source_relative:service/frontend/client/v1 {} +
+      
       
 
       - name: Verify Generated Files
