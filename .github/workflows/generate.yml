@@ -51,14 +51,12 @@ jobs:
           # Generate service files (services) directly into service/frontend/client/v1
           find . -name "*.proto" -exec protoc --proto_path=. \
             --go-grpc_out=service/frontend/client/v1 {} +
-      
-      
 
       - name: Verify Generated Files
         run: |
           cd ap2-apis-user-service
-          ls -R ../base
-          ls -R ../service
+          ls -R base
+          ls -R service
 
       - name: Commit & Push Generated Files
         env:
