@@ -45,16 +45,16 @@ jobs:
           echo "Directory structure before generation:"
           find . -type d
 
+          # List all .proto files to confirm their existence
+          echo "Listing all .proto files:"
+          find . -name "*.proto"
+
           # Remove old generated files to avoid mixing
           rm -rf base/bo/v1 service/frontend/client/v1
 
           # Recreate directories for generated files
           mkdir -p base/bo/v1
           mkdir -p service/frontend/client/v1
-
-          # Verify .proto files are where we expect them to be
-          echo "Listing all .proto files:"
-          find . -name "*.proto"
 
           # Make sure the .proto files actually exist (Correct paths)
           if [ ! -f "base/frontend/v1/client.proto" ]; then
@@ -63,7 +63,8 @@ jobs:
           fi
 
           if [ ! -f "service/frontend/client/v1/client.proto" ]; then
-            echo "Error: service/frontend/client/v1/client.proto not found."
+            echo "Error: service/frontend/client/v1/client.proto not found. Here are all the .proto files in your repository:"
+            find . -name "*.proto"
             exit 1
           fi
 
