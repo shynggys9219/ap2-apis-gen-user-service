@@ -56,6 +56,17 @@ jobs:
           echo "Listing all .proto files:"
           find . -name "*.proto"
 
+          # Make sure the .proto files actually exist
+          if [ ! -f "base/frontend/v1/client.proto" ]; then
+            echo "Error: base/frontend/v1/client.proto not found."
+            exit 1
+          fi
+
+          if [ ! -f "service/frontend/client/v1/client.proto" ]; then
+            echo "Error: service/frontend/client/v1/client.proto not found."
+            exit 1
+          fi
+
           # Generate base files (messages) from proto in `base/frontend/v1`
           echo "Generating base files..."
           protoc -I. \
