@@ -49,29 +49,20 @@ jobs:
           echo "Listing all .proto files:"
           find . -name "*.proto"
 
-          # Remove old generated files to avoid mixing
-          rm -rf base/bo/v1 service/frontend/client/v1
+          # Remove old generated .pb.go files to avoid mixing (do not delete folders)
+          rm -rf base/bo/v1/*.pb.go service/frontend/client/v1/*.pb.go
 
-          # Recreate directories for generated files
+          # Recreate directories for generated files (if needed)
           mkdir -p base/bo/v1
           mkdir -p service/frontend/client/v1
 
-          # Show .gitignore if exists
-          if [ -f ".gitignore" ]; then
-            echo ".gitignore content:"
-            cat .gitignore
-          else
-            echo "No .gitignore file found."
+          # Check if the file exists
+          if [ ! -f "base/frontend/v1/client.proto" ]; then
+            echo "Error: base/frontend/v1/client.proto not found."
+            exit 1
           fi
 
-          # Show latest commit to confirm cloning
-          echo "Checking git status:"
-          git status
-
-          # Check if the file exists
-          if [ -f "service/frontend/client/v1/client.proto" ]; then
-            echo "File service/frontend/client/v1/client.proto exists."
-          else
+          if [ ! -f "service/frontend/client/v1/client.proto" ]; then
             echo "Error: service/frontend/client/v1/client.proto not found. Listing all .proto files again:"
             find . -name "*.proto"
             exit 1
