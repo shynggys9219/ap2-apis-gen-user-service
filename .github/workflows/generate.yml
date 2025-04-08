@@ -46,7 +46,11 @@ jobs:
           find . -type d
 
           # Remove old generated files to avoid mixing
-          rm -rf base/bo/v1/*.pb.go service/frontend/client/v1/*.pb.go
+          rm -rf base/bo/v1 service/frontend/client/v1
+
+          # Recreate directories for generated files
+          mkdir -p base/bo/v1
+          mkdir -p service/frontend/client/v1
 
           # Verify .proto files are where we expect them to be
           echo "Listing all .proto files:"
