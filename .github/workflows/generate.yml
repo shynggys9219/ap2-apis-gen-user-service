@@ -106,9 +106,13 @@ jobs:
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Copy generated files into the cloned repo (force overwrite)
-          rsync -av --delete base/ ap2-apis-gen-user-service/base/
-          rsync -av --delete service/ ap2-apis-gen-user-service/service/
+          # Clear out old files to avoid duplication issues
+          rm -rf ap2-apis-gen-user-service/base/*
+          rm -rf ap2-apis-gen-user-service/service/*
+
+          # Copy generated files to the cloned repository
+          cp -r base/* ap2-apis-gen-user-service/base/
+          cp -r service/* ap2-apis-gen-user-service/service/
 
           cd ap2-apis-gen-user-service
 
