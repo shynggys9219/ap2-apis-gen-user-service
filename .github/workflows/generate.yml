@@ -91,13 +91,7 @@ jobs:
             exit 1
           fi
 
-      - name: Verify Generated Files
-        run: |
-          cd ap2-apis-user-service
-          ls -R base || echo "Base directory not found"
-          ls -R service || echo "Service directory not found"
-
-      - name: Commit & Push Generated Files
+      - name: Commit & Push Generated Files and Create New Tag
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
@@ -106,17 +100,24 @@ jobs:
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
+          # Debug: Check where the generated files actually are
+          echo "Generated files in base:"
+          find base -name "*.pb.go"
+
+          echo "Generated files in service:"
+          find service -name "*.pb.go"
+
           # Clear previously generated files
           rm -rf ap2-apis-gen-user-service/base/frontend/v1
           rm -rf ap2-apis-gen-user-service/service/frontend/client/v1
 
-          # Recreate directory structure
+          # Recreate structure
           mkdir -p ap2-apis-gen-user-service/base/frontend/v1
           mkdir -p ap2-apis-gen-user-service/service/frontend/client/v1
 
-          # Copy only the generated files into the correct structure
-          cp base/frontend/v1/*.pb.go ap2-apis-gen-user-service/base/frontend/v1/
-          cp service/frontend/client/v1/*.pb.go ap2-apis-gen-user-service/service/frontend/client/v1/
+          # Copy the generated files into the correct structure
+          cp base/frontend/v1/*.pb.go ap2-apis-gen-user-service/base/frontend/v1/ || echo "No base files copied"
+          cp service/frontend/client/v1/*.pb.go ap2-apis-gen-user-service/service/frontend/client/v1/ || echo "No service files copied"
 
           cd ap2-apis-gen-user-service
 
@@ -124,10 +125,17 @@ jobs:
           git config --global user.email "alshynggys@mail.ru"
 
           git add .
-          git commit -m "Regenerate proto Go files"
-          
-          # Create new tag with timestamp (or increment manually)
-          NEW_TAG="v0.0.$(date +%s)"
-          git tag $NEW_TAG
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
-          git push origin master --follow-tags
+
+          # Check if there's anything to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Regenerate proto Go files"
+
+            # Create new tag with timestamp (you can customize this)
+            NEW_TAG="v0.0.$(date +%s)"
+            git tag $NEW_TAG
+
+            git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
+            git push origin master --follow-tags
+          fi
