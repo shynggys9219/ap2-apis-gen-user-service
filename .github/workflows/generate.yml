@@ -29,8 +29,9 @@ jobs:
 
       - name: Install Go Protobuf Tools
         run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+          export PATH="$PATH:$(go env GOPATH)/bin"
 
       - name: Clone Proto Files Repository
         run: |
@@ -53,13 +54,13 @@ jobs:
           # Generate .pb.go files (use source-relative paths!)
           echo "Generating base files..."
           protoc -I. \
-            --go_out=paths=source_relative,lang=go1.20:base/frontend/v1 \
+            --go_out=paths=source_relative:. \
             base/frontend/v1/client.proto
 
           echo "Generating service files..."
           protoc -I. \
-            --go_out=paths=source_relative,lang=go1.20:service/frontend/client/v1 \
-            --go-grpc_out=paths=source_relative,lang=go1.20:service/frontend/client/v1 \
+            --go_out=paths=source_relative:. \
+            --go-grpc_out=paths=source_relative:. \
             service/frontend/client/v1/client.proto
 
           echo "Generated Go files:"
