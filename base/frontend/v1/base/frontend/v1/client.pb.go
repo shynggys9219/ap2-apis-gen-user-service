@@ -9,6 +9,7 @@ package base
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -28,7 +29,11 @@ type Client struct {
 	// client full name
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// email
-	Email         string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	// phone
+	Phone string `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	// created at == registration time for a client
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -84,15 +89,32 @@ func (x *Client) GetEmail() string {
 	return ""
 }
 
+func (x *Client) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *Client) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 var File_base_frontend_v1_client_proto protoreflect.FileDescriptor
 
 const file_base_frontend_v1_client_proto_rawDesc = "" +
 	"\n" +
-	"\x1dbase/frontend/v1/client.proto\x12\x15user.base.frontend.v1\"B\n" +
+	"\x1dbase/frontend/v1/client.proto\x12\x15user.base.frontend.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x93\x01\n" +
 	"\x06Client\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05emailBCZAgithub.com/shynggys9219/ap2-apis-gen-user-service/base/bo/v1;baseb\x06proto3"
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtBCZAgithub.com/shynggys9219/ap2-apis-gen-user-service/base/bo/v1;baseb\x06proto3"
 
 var (
 	file_base_frontend_v1_client_proto_rawDescOnce sync.Once
@@ -108,14 +130,16 @@ func file_base_frontend_v1_client_proto_rawDescGZIP() []byte {
 
 var file_base_frontend_v1_client_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_base_frontend_v1_client_proto_goTypes = []any{
-	(*Client)(nil), // 0: user.base.frontend.v1.Client
+	(*Client)(nil),                // 0: user.base.frontend.v1.Client
+	(*timestamppb.Timestamp)(nil), // 1: google.protobuf.Timestamp
 }
 var file_base_frontend_v1_client_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: user.base.frontend.v1.Client.created_at:type_name -> google.protobuf.Timestamp
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_base_frontend_v1_client_proto_init() }
