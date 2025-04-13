@@ -7,7 +7,7 @@
 package client
 
 import (
-	v1 "github.com/shynggys9219/ap2-apis-gen-user-service/base/bo/v1"
+	v1 "github.com/shynggys9219/ap2-apis-gen-user-service/base/frontend/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

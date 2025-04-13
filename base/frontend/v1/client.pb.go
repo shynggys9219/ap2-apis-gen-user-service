@@ -114,7 +114,7 @@ const file_base_frontend_v1_client_proto_rawDesc = "" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x129\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtBCZAgithub.com/shynggys9219/ap2-apis-gen-user-service/base/bo/v1;baseb\x06proto3"
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtBIZGgithub.com/shynggys9219/ap2-apis-gen-user-service/base/frontend/v1;baseb\x06proto3"
 
 var (
 	file_base_frontend_v1_client_proto_rawDescOnce sync.Once
