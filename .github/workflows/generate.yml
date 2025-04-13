@@ -96,6 +96,11 @@ jobs:
           git config --global user.email "alshynggys@mail.ru"
           
           git add .
+          git add .
+  
+          if git diff --cached --quiet; then
+          echo "No changes to commit. Skipping commit and push."
+          else
           git commit -m "Regenerate proto Go files"
           
           # Tag with timestamp-based version
@@ -104,4 +109,5 @@ jobs:
           
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
           git push origin master --follow-tags
+          fi
 
