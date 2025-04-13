@@ -106,23 +106,28 @@ jobs:
           # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Clean old files
-          rm -rf ap2-apis-gen-user-service/base
-          rm -rf ap2-apis-gen-user-service/service
+          # Clear previously generated files
+          rm -rf ap2-apis-gen-user-service/base/frontend/v1
+          rm -rf ap2-apis-gen-user-service/service/frontend/client/v1
 
-          # Copy the correctly structured folders
-          cp -r base ap2-apis-gen-user-service/
-          cp -r service ap2-apis-gen-user-service/
+          # Recreate directory structure
+          mkdir -p ap2-apis-gen-user-service/base/frontend/v1
+          mkdir -p ap2-apis-gen-user-service/service/frontend/client/v1
+
+          # Copy only the generated files into the correct structure
+          cp base/frontend/v1/*.pb.go ap2-apis-gen-user-service/base/frontend/v1/
+          cp service/frontend/client/v1/*.pb.go ap2-apis-gen-user-service/service/frontend/client/v1/
 
           cd ap2-apis-gen-user-service
-
-          # Remove any .proto files just in case
-          find . -name "*.proto" -delete
 
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
 
           git add .
-          git commit -m "Generated files from Protobufs"
+          git commit -m "Regenerate proto Go files"
+          
+          # Create new tag with timestamp (or increment manually)
+          NEW_TAG="v0.0.$(date +%s)"
+          git tag $NEW_TAG
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
-          git push origin master
+          git push origin master --follow-tags
