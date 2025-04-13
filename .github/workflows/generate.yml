@@ -35,89 +35,56 @@ jobs:
       - name: Clone Proto Files Repository
         run: |
           git clone https://github.com/shynggys9219/ap2-apis-user-service.git
-          cd ap2-apis-user-service
 
       - name: Generate Go Code from Proto Files
         run: |
           cd ap2-apis-user-service
 
-          # Confirm directory structure
-          echo "Directory structure before generation:"
+          echo "Directory structure:"
           find . -type d
 
-          # List all .proto files to confirm their existence
-          echo "Listing all .proto files:"
+          echo "Listing .proto files:"
           find . -name "*.proto"
 
-          # Remove old generated .pb.go files to avoid mixing (do not delete folders)
-          rm -rf base/frontend/v1/*.pb.go service/frontend/client/v1/*.pb.go
+          # Clean up previously generated files
+          rm -f base/frontend/v1/*.pb.go
+          rm -f service/frontend/client/v1/*.pb.go
 
-          # Recreate directories for generated files (if needed)
-          mkdir -p base/frontend/v1
-          mkdir -p service/frontend/client/v1
-
-          # Check if the file exists
-          if [ ! -f "base/frontend/v1/client.proto" ]; then
-            echo "Error: base/frontend/v1/client.proto not found."
-            exit 1
-          fi
-
-          if [ ! -f "service/frontend/client/v1/client.proto" ]; then
-            echo "Error: service/frontend/client/v1/client.proto not found. Listing all .proto files again:"
-            find . -name "*.proto"
-            exit 1
-          fi
-
-          # Generate base files (messages) from proto in `base/frontend/v1`
+          # Generate .pb.go files (use source-relative paths!)
           echo "Generating base files..."
           protoc -I. \
-            --go_out=paths=source_relative:base/frontend/v1 \
+            --go_out=paths=source_relative:. \
             base/frontend/v1/client.proto
 
-          # Generate service files (messages + grpc services) from proto in `service/frontend/client/v1`
           echo "Generating service files..."
           protoc -I. \
-            --go_out=paths=source_relative:service/frontend/client/v1 \
-            --go-grpc_out=paths=source_relative:service/frontend/client/v1 \
+            --go_out=paths=source_relative:. \
+            --go-grpc_out=paths=source_relative:. \
             service/frontend/client/v1/client.proto
 
-          # Verify generated files
           echo "Generated Go files:"
-          find base service -name "*.pb.go" || echo "No files generated"
+          find . -name "*.pb.go"
 
-          # Ensure files are generated
-          if [ -z "$(find base service -name "*.pb.go")" ]; then
+          # Ensure files were created
+          if [ -z "$(find . -name '*.pb.go')" ]; then
             echo "Error: No .pb.go files generated."
             exit 1
           fi
 
-      - name: Commit & Push Generated Files and Create New Tag
+      - name: Push Generated Code to Gen Repo
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd ap2-apis-user-service
-
-          # Clone the target repository
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
 
-          # Debug: Check where the generated files actually are
-          echo "Generated files in base:"
-          find base -name "*.pb.go"
+          # Clean out old generated Go files (not folders)
+          rm -f ap2-apis-gen-user-service/base/frontend/v1/*.pb.go
+          rm -f ap2-apis-gen-user-service/service/frontend/client/v1/*.pb.go
 
-          echo "Generated files in service:"
-          find service -name "*.pb.go"
-
-          # Clear previously generated files
-          rm -rf ap2-apis-gen-user-service/base/frontend/v1
-          rm -rf ap2-apis-gen-user-service/service/frontend/client/v1
-
-          # Recreate structure
-          mkdir -p ap2-apis-gen-user-service/base/frontend/v1
-          mkdir -p ap2-apis-gen-user-service/service/frontend/client/v1
-
-          # Copy the generated files into the correct structure
-          cp base/frontend/v1/*.pb.go ap2-apis-gen-user-service/base/frontend/v1/ || echo "No base files copied"
-          cp service/frontend/client/v1/*.pb.go ap2-apis-gen-user-service/service/frontend/client/v1/ || echo "No service files copied"
+          # Copy generated files into the right folders
+          cp base/frontend/v1/*.pb.go ap2-apis-gen-user-service/base/frontend/v1/
+          cp service/frontend/client/v1/*.pb.go ap2-apis-gen-user-service/service/frontend/client/v1/
 
           cd ap2-apis-gen-user-service
 
@@ -125,17 +92,11 @@ jobs:
           git config --global user.email "alshynggys@mail.ru"
 
           git add .
+          git commit -m "Regenerate proto Go files"
 
-          # Check if there's anything to commit
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Regenerate proto Go files"
+          # Tagging with a timestamp-based version
+          NEW_TAG="v0.0.$(date +%s)"
+          git tag $NEW_TAG
 
-            # Create new tag with timestamp (you can customize this)
-            NEW_TAG="v0.0.$(date +%s)"
-            git tag $NEW_TAG
-
-            git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
-            git push origin master --follow-tags
-          fi
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
+          git push origin master --follow-tags
