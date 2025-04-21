@@ -74,9 +74,15 @@ jobs:
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
           
           # Copy all generated files preserving directory structure
-          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../base/frontend/v1/ ./base/
-          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../events/v1/ ./events/
-          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../service/frontend/client/v1/ ./service/
+          # Sync generated files into the target repo while maintaining structure
+          rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
+          ap2-apis-user-service/base/frontend/v1/ ap2-apis-gen-user-service/base/frontend/v1/
+  
+          rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
+          ap2-apis-user-service/events/v1/ ap2-apis-gen-user-service/events/v1/
+          
+          rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
+          ap2-apis-user-service/service/frontend/client/v1/ ap2-apis-gen-user-service/service/frontend/client/v1/
   
           cd ap2-apis-gen-user-service
           
