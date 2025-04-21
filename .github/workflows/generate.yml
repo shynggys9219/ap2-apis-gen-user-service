@@ -71,24 +71,18 @@ jobs:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd ap2-apis-user-service
-
-          # cloning target repo
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
-
-          # move inside the target repo directly
+          
+          # Copy all generated files preserving directory structure
+          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../base/frontend/v1/ ./base/
+          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../events/v1/ ./events/
+          rsync -avR --include='*.pb.go' --include='*/' --exclude='*' ../service/frontend/client/v1/ ./service/
+  
           cd ap2-apis-gen-user-service
-
-          # Sync generated files directly into current directory (repo root)
-          rsync -av --include='*/' --include='*.pb.go' --exclude='*' ../base/ .
-          rsync -av --include='*/' --include='*.pb.go' --exclude='*' ../events/ .
-          rsync -av --include='*/' --include='*.pb.go' --exclude='*' ../service/ .
-
-          # Clean up .proto files
-          find . -name "*.proto" -delete
-
+          
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
-
+          
           git add .
 
           if git diff --cached --quiet; then
