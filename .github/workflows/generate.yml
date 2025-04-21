@@ -31,15 +31,16 @@ jobs:
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+          echo "GOPATH bin: $(go env GOPATH)/bin"
           export PATH="$PATH:$(go env GOPATH)/bin"
 
       - name: Clone Proto Files Repository
         run: |
-          git clone https://github.com/shynggys9219/ap2-apis-user-service.git
+          git clone https://github.com/shynggys9219/ap2-apis-user-service.git proto-src
 
       - name: Generate Go Code from Proto Files
         run: |
-          cd ap2-apis-user-service
+          cd proto-src
 
           echo "Directory structure:"
           find . -type d
@@ -50,7 +51,6 @@ jobs:
           # Clean up previously generated files
           find . -name "*.pb.go" -delete
 
-          # Generate .pb.go and _grpc.pb.go files from all .proto files
           echo "Generating Go code from .proto files..."
           find . -name "*.proto" -exec \
             protoc -I. \
@@ -70,17 +70,16 @@ jobs:
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          cd ap2-apis-user-service
-          git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
-          
-          # Copy all generated files preserving directory structure
-          rsync -av --include='*/' --include='*.pb.go' --exclude='*' . ap2-apis-gen-user-service/
+          git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git gen-repo
 
-          cd ap2-apis-gen-user-service
-          
+          # Copy only .pb.go files while preserving directory structure
+          rsync -av --include='*/' --include='*.pb.go' --exclude='*' proto-src/ gen-repo/
+
+          cd gen-repo
+
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
-          
+
           git add .
 
           if git diff --cached --quiet; then
