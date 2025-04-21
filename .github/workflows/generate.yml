@@ -72,31 +72,35 @@ jobs:
         run: |
           cd ap2-apis-user-service
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
-          
+
+          # Ensure the destination directories exist
+          mkdir -p ../ap2-apis-gen-user-service/base/frontend/v1
+          mkdir -p ../ap2-apis-gen-user-service/events/v1
+          mkdir -p ../ap2-apis-gen-user-service/service/frontend/client/v1
+
           # Copy all generated files preserving directory structure
-          # Sync generated files into the target repo while maintaining structure
           rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
-          base/frontend/v1/ ../ap2-apis-gen-user-service/base/frontend/v1/
-          
+            base/frontend/v1/ ../ap2-apis-gen-user-service/base/frontend/v1/
+
           rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
-          events/v1/ ../ap2-apis-gen-user-service/events/v1/
-          
+            events/v1/ ../ap2-apis-gen-user-service/events/v1/
+
           rsync -avR --include='*/' --include='*.pb.go' --exclude='*' \
-          service/frontend/client/v1/ ../ap2-apis-gen-user-service/service/frontend/client/v1/
-          
+            service/frontend/client/v1/ ../ap2-apis-gen-user-service/service/frontend/client/v1/
+
           cd ../ap2-apis-gen-user-service
-          
+
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
-          
+
           git add .
-          
+
           if git diff --cached --quiet; then
-          echo "No changes to commit. Skipping commit and push."
+            echo "No changes to commit. Skipping commit and push."
           else
-          git commit -m "Regenerate proto Go files"
-          NEW_TAG="v0.0.$(date +%s)"
-          git tag $NEW_TAG
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
-          git push origin master --follow-tags
+            git commit -m "Regenerate proto Go files"
+            NEW_TAG="v0.0.$(date +%s)"
+            git tag $NEW_TAG
+            git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
+            git push origin master --follow-tags
           fi
