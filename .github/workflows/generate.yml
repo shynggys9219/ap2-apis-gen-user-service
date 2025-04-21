@@ -51,18 +51,19 @@ jobs:
           # Clean up previously generated files
           find . -name "*.pb.go" -delete
 
-          echo "Generating Go code from .proto files..."
+          # Generate Go files from all .proto definitions
+          echo "Generating .pb.go and _grpc.pb.go files..."
           find . -name "*.proto" -exec \
             protoc -I. \
               --go_out=paths=source_relative:. \
               --go-grpc_out=paths=source_relative:. \
               {} +
 
-          echo "Generated Go files:"
+          echo "Generated files:"
           find . -name "*.pb.go"
 
           if [ -z "$(find . -name '*.pb.go')" ]; then
-            echo "Error: No .pb.go files generated."
+            echo "Error: No .pb.go files were generated."
             exit 1
           fi
 
@@ -70,10 +71,18 @@ jobs:
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          # Clone target repo OUTSIDE of proto repo
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git gen-repo
 
-          # Copy only .pb.go files while preserving directory structure
-          rsync -av --include='*/' --include='*.pb.go' --exclude='*' proto-src/ gen-repo/
+          # Ensure necessary dirs
+          mkdir -p gen-repo/base/frontend/v1
+          mkdir -p gen-repo/events/v1
+          mkdir -p gen-repo/service/frontend/client/v1
+
+          # Copy over only the generated files
+          rsync -av proto-repo/base/frontend/v1/*.pb.go gen-repo/base/frontend/v1/ || true
+          rsync -av proto-repo/events/v1/*.pb.go gen-repo/events/v1/ || true
+          rsync -av proto-repo/service/frontend/client/v1/*.pb.go gen-repo/service/frontend/client/v1/ || true
 
           cd gen-repo
 
@@ -87,7 +96,7 @@ jobs:
           else
             git commit -m "Regenerate proto Go files"
             NEW_TAG="v0.0.$(date +%s)"
-            git tag $NEW_TAG
+            git tag "$NEW_TAG"
             git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/shynggys9219/ap2-apis-gen-user-service.git
             git push origin master --follow-tags
           fi
