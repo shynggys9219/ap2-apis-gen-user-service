@@ -72,22 +72,15 @@ jobs:
         run: |
           cd ap2-apis-user-service
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git
+          
+          # Copy all generated files preserving directory structure
+          rsync -av --include='*/' --include='*.pb.go' --exclude='*' . ap2-apis-gen-user-service/
 
-          # Ensure directories exist
-          mkdir -p ../ap2-apis-gen-user-service/base/frontend/v1
-          mkdir -p ../ap2-apis-gen-user-service/events/v1
-          mkdir -p ../ap2-apis-gen-user-service/service/frontend/client/v1
-
-          # Copy only .pb.go files without nesting mess
-          rsync -av base/frontend/v1/*.pb.go ../ap2-apis-gen-user-service/base/frontend/v1/
-          rsync -av events/v1/*.pb.go ../ap2-apis-gen-user-service/events/v1/
-          rsync -av service/frontend/client/v1/*.pb.go ../ap2-apis-gen-user-service/service/frontend/client/v1/
-
-          cd ../ap2-apis-gen-user-service
-
+          cd ap2-apis-gen-user-service
+          
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
-
+          
           git add .
 
           if git diff --cached --quiet; then
