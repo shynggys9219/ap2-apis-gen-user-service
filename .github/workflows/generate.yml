@@ -1,4 +1,4 @@
-name: Generate ProtoBuf Files & Auto Tag
+name: Generate ProtoBuf
 
 on:
   push:
@@ -42,22 +42,11 @@ jobs:
         run: |
           cd proto-src
 
-          echo "Directory structure:"
-          find . -type d
-
-          echo "Listing .proto files:"
-          find . -name "*.proto"
-
-          # Clean up previously generated files
+          echo "Cleaning up old generated files..."
           find . -name "*.pb.go" -delete
 
-          # Generate Go files from all .proto definitions
           echo "Generating .pb.go and _grpc.pb.go files..."
-          find . -name "*.proto" -exec \
-            protoc -I. \
-              --go_out=paths=source_relative:. \
-              --go-grpc_out=paths=source_relative:. \
-              {} +
+          find . -name "*.proto" -print0 | xargs -0 -n1 protoc -I. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:.
 
           echo "Generated files:"
           find . -name "*.pb.go"
@@ -71,20 +60,17 @@ jobs:
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          # Clone target repo OUTSIDE of proto repo
           git clone https://github.com/shynggys9219/ap2-apis-gen-user-service.git gen-repo
 
-          # Ensure necessary dirs
-          mkdir -p gen-repo/base/frontend/v1
-          mkdir -p gen-repo/events/v1
-          mkdir -p gen-repo/service/frontend/client/v1
+          # Copy all generated .pb.go files preserving folder structure
+          cd proto-src
+          find . -name "*.pb.go" | while read file; do
+            target="../gen-repo/$(dirname "$file")"
+            mkdir -p "$target"
+            cp "$file" "$target/"
+          done
 
-          # Copy over only the generated files
-          rsync -av proto-src/base/frontend/v1/*.pb.go gen-repo/base/frontend/v1/ || true
-          rsync -av proto-src/events/v1/*.pb.go gen-repo/events/v1/ || true
-          rsync -av proto-src/service/frontend/client/v1/*.pb.go gen-repo/service/frontend/client/v1/ || true
-
-          cd gen-repo
+          cd ../gen-repo
 
           git config --global user.name "shynggys9219"
           git config --global user.email "alshynggys@mail.ru"
